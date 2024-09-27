@@ -1,0 +1,23 @@
+function fuckYourWallpapers {
+    $ApiUrl = "https://storage.googleapis.com/panels-api/data/20240916/media-1a-i-p~s"
+    $DownloadFolder = "$env:userprofile\Downloads\dumbWallpapers"
+    if (-not (Test-Path $DownloadFolder)) { New-Item -Path $DownloadFolder -ItemType Directory }
+    $response = Invoke-RestMethod -Uri $ApiUrl
+
+    foreach ($entry in $response.data.PSObject.Properties) {
+        $id = $entry.Name
+        $idFolder = Join-Path $DownloadFolder $id
+        if (-not (Test-Path $idFolder)) { New-Item -Path $idFolder -ItemType Directory }
+
+        foreach ($urlEntry in $entry.Value.PSObject.Properties) {
+            $url = $urlEntry.Value
+            if ($url -match '^https?://') {
+                $filePath = Join-Path $idFolder "$($urlEntry.Name).jpg"
+                Invoke-WebRequest -Uri $url -OutFile $filePath
+            }
+        }
+    }
+}
+
+
+fuckYourWallpapers
